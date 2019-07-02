@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
-from ddtrace import tracer, patch, config, Pin
+from ddtrace import tracer, patch, Pin
 tracer.configure(hostname='agent')
-patch(requests=True,futures=True,asyncio=True)
+patch(futures=True, asyncio=True)
 
 tracer.debug_logging = True
 
