@@ -3,8 +3,6 @@ from ddtrace import tracer, patch, Pin
 tracer.configure(hostname='agent')
 patch(futures=True, asyncio=True)
 
-tracer.debug_logging = True
-
 import asyncio
 import argparse
 from requests_threads import AsyncSession
@@ -23,14 +21,16 @@ asyncio.set_event_loop(asyncio.new_event_loop())
 session = AsyncSession(n=args.concurrent)
 Pin.override(session, service='concurrent-requests-generator')
 
+
 async def generate_requests():
-    with tracer.trace('flask.request', service='concurrent-requests-generator') as span:
+    with tracer.trace('flask.request', service='concurrent-requests-generator'):
         rs = []
         for _ in range(args.total):
             rs.append(session.get(args.url))
         for i in range(args.total):
             rs[i] = await rs[i]
         print(rs)
+
 
 session.run(generate_requests)
 session.close()
