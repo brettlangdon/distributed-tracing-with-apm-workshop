@@ -19,7 +19,7 @@ services:
     environment:
       - FLASK_APP=api.py
       - FLASK_DEBUG=1
-      - DATADOG_SERVICE_NAME=iot-frontend
+      - DATADOG_SERVICE_NAME=frontend
       - DATADOG_TRACE_AGENT_HOSTNAME=agent
     image: "brettlangdon/distributed-tracing-workshop-frontend:latest"
     # For dev uncomment
@@ -37,7 +37,7 @@ services:
       - pumps
       - sensors
     labels:
-      com.datadoghq.ad.logs: '[{"source": "python", "service": "iot-frontend"}]'
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "frontend"}]'
 
   node:
     environment:
