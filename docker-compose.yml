@@ -22,9 +22,6 @@ services:
       - DATADOG_SERVICE_NAME=frontend
       - DATADOG_TRACE_AGENT_HOSTNAME=agent
     image: "brettlangdon/distributed-tracing-workshop-frontend:latest"
-    # For dev uncomment
-    # build: ./frontend
-    # Always keep this volume enabled so we can live code during the workshop
     volumes:
       - "./frontend/frontend:/app"
     command: ddtrace-run flask run --port=5000 --host=0.0.0.0
@@ -44,11 +41,8 @@ services:
       - DD_SERVICE_NAME=users-api
       - DD_TRACE_AGENT_HOSTNAME=agent
     image: "brettlangdon/distributed-tracing-workshop-node-api:latest"
-    # For dev uncomment
-    # build: ./node-api
-    # volumes:
-    #   - "./node-api:/app"
-    #   - /app/node_modules
+    volumes:
+      - "./node-api:/app"
     ports:
       - "5004:5004"
     depends_on:
@@ -66,10 +60,8 @@ services:
       - DATADOG_SERVICE_NAME=pumps-service
       - DATADOG_TRACE_AGENT_HOSTNAME=agent
     image: "brettlangdon/distributed-tracing-workshop-pumps-api:latest"
-    # For dev uncomment
-    # build: ./pumps-api
-    # volumes:
-    #   - "./pumps-api:/app"
+    volumes:
+      - "./pumps-api:/app"
     command: ddtrace-run flask run --port=5001 --host=0.0.0.0
     ports:
       - "5001:5001"
@@ -93,10 +85,8 @@ services:
       - DATADOG_SERVICE_NAME=sensors-api
       - DATADOG_TRACE_AGENT_HOSTNAME=agent
     image: "brettlangdon/distributed-tracing-workshop-sensors:latest"
-    # For dev uncomment
-    # build: ./sensors
-    # volumes:
-    #   - "./sensors:/app"
+    volumes:
+      - "./sensors:/app"
     command: ddtrace-run flask run --port=5002 --host=0.0.0.0
     ports:
       - "5002:5002"
