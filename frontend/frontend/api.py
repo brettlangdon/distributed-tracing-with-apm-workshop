@@ -1,16 +1,17 @@
-import requests
+# stdlib
+import os
+import random
+import subprocess
 
+# 3rd party
+from ddtrace import tracer
 from flask import Flask, jsonify, send_from_directory
 from flask import request as flask_request
-
 from flask_cors import CORS
-import os
+import requests
 
-from ddtrace import tracer
-
-
-import subprocess
-import random
+# internal
+from .utils import get_user_id, maybe_raise_exception
 
 app = Flask('api')
 
