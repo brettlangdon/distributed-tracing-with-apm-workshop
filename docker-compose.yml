@@ -43,6 +43,7 @@ services:
     image: "brettlangdon/distributed-tracing-workshop-node-api:latest"
     volumes:
       - "./node-api:/app"
+      - "/app/node_modules"
     ports:
       - "5004:5004"
     depends_on:
