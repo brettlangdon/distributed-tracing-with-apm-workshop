@@ -97,7 +97,9 @@ def call_generate_requests_user():
 @app.route('/simulate_sensors')
 def simulate_sensors():
     app.logger.info('Simulating refresh of sensor data')
-    sensors = requests.get('http://sensors:5002/refresh_sensors').json()
+    resp = requests.get('http://sensors:5002/refresh_sensors')
+    resp.raise_for_status()
+    sensors = resp.json()
     return jsonify(sensors)
 
 
