@@ -1,4 +1,4 @@
-const tracer = require('dd-trace').init({analytics: true})
+const tracer = require('dd-trace').init()
 const express = require('express')
 const winston = require('winston')
 const bodyParser = require('body-parser')
