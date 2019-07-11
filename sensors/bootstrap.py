@@ -1,6 +1,6 @@
 from flask import Flask
 from ddtrace import tracer, patch
-patch(sqlalchemy=True,sqlite3=True,psycopg=True)
+patch(sqlite3=True, psycopg=True)
 from models import Sensor, Network, db
 
 

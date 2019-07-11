@@ -25,6 +25,7 @@ class Sensor(db.Model):
             'site': self.network.site
         }
 
+
 class Network(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
@@ -35,4 +36,3 @@ class Network(db.Model):
     def __init__(self, name, site):
         self.name = name
         self.site = site
-    
