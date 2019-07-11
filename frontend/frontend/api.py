@@ -21,14 +21,13 @@ if os.environ['FLASK_DEBUG']:
 
 @app.route('/')
 def homepage():
-    app.logger.info("Homepage called")
     return app.send_static_file('index.html')
 
 
 @app.route('/status')
 def system_status():
     status = requests.get('http://sensors:5002/sensors').json()
-    app.logger.info(f"Sensor status: {status}")
+    app.logger.info(f'Sensor status: {status}')
     pumps = requests.get('http://pumps:5001/devices').json()
     users = requests.get('http://node:5004/users').json()
     return jsonify({'sensor_status': status, 'pump_status': pumps, 'users': users})
@@ -38,11 +37,11 @@ def system_status():
 def users():
     if flask_request.method == 'POST':
         newUser = flask_request.get_json()
-        app.logger.info(f"Adding new user: {newUser}")
+        app.logger.info(f'Adding new user: {newUser}')
         userStatus = requests.post('http://node:5004/users', json=newUser).json()
         return jsonify(userStatus)
     elif flask_request.method == 'GET':
-        app.logger.info(f"Getting all users")
+        app.logger.info(f'Getting all users')
         users = requests.get('http://node:5004/users').json()
         return jsonify(users)
 
@@ -57,7 +56,7 @@ def add_sensor():
 @app.route('/add_pump', methods=['POST'])
 def add_pump():
     pumps = requests.post('http://pumps:5001/devices').json()
-    app.logger.info(f"Getting {pumps}")
+    app.logger.info(f'Getting {pumps}')
     return jsonify(pumps)
 
 
@@ -67,14 +66,19 @@ def call_generate_requests():
     span = tracer.current_root_span()
     span.set_tags({'requests': payload['total'], 'concurrent': payload['concurrent']})
 
-    output = subprocess.check_output(['/app/traffic_generator.py',
-                                      str(payload['concurrent']), 
-                                      str(payload['total']),
-                                      str(payload['url'])])
-    app.logger.info(f"Result for subprocess call: {output}")
-    return jsonify({'traffic': str(payload['concurrent']) + ' concurrent requests generated, ' + 
-                               str(payload['total'])  + ' requests total.',
-                    'url': payload['url']})
+    output = subprocess.check_output([
+        '/app/traffic_generator.py',
+        str(payload['concurrent']),
+        str(payload['total']),
+        str(payload['url']),
+    ])
+    app.logger.info(f'Result for subprocess call: {output}')
+    return jsonify({
+        'traffic': (
+            '{0} concurrent requests generated, {1} requests total'.format(payload['concurrent'], payload['total'])
+        ),
+        'url': payload['url'],
+    })
 
 
 # generate requests for one user to see tagged
@@ -86,11 +90,13 @@ def call_generate_requests_user():
     span = tracer.current_root_span()
     span.set_tags({'user_id': user['id']})
 
-    output = subprocess.check_output(['/app/traffic_generator.py',
-                                     '20',
-                                     '100',
-                                     'http://node:5004/users/' + user['uid']])
-    app.logger.info(f"Chose random user {user['name']} for requests: {output}")
+    output = subprocess.check_output([
+        '/app/traffic_generator.py',
+        '20',
+        '100',
+        'http://node:5004/users/' + user['uid'],
+    ])
+    app.logger.info(f'Chose random user {user["name"]} for requests: {output}')
     return jsonify({'random_user': user['name']})
 
 
