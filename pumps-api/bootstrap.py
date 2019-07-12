@@ -1,3 +1,6 @@
+from contextlib import contextmanager
+
+from ddtrace import tracer
 from flask import Flask
 from models import Pump, db
 
@@ -6,16 +9,26 @@ DB_USERNAME = os.environ['POSTGRES_USER']
 DB_PASSWORD = os.environ['POSTGRES_PASSWORD']
 
 
+@contextmanager
+def disable_tracer():
+    try:
+        tracer.enabled = False
+        yield
+    finally:
+        tracer.enabled = True
+
+
 def create_app():
     """Create a Flask application"""
-    app = Flask(__name__)
-    #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + DB_USERNAME + ':' + DB_PASSWORD + '@' + 'db/' + DB_USERNAME
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    with disable_tracer():
+        app = Flask(__name__)
+        # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + DB_USERNAME + ':' + DB_PASSWORD + '@' + 'db/' + DB_USERNAME
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    db.init_app(app)
-    initialize_database(app, db)
-    return app
+        db.init_app(app)
+        initialize_database(app, db)
+        return app
 
 
 def initialize_database(app, db):
