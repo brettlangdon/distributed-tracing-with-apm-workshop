@@ -154,15 +154,24 @@ class Dashboard extends React.Component {
     }, 3000)
   }
 
-  componentDidMount = () => {
-    
+  getStatus = () => {
     axios.get(rootURL + "/status", { crossdomain: true }).then(response => {
       console.log(response.data)
       this.setState({pumpStatus: response.data.pump_status.status})
       this.setState({userStatus: response.data.users})
       this.setState({sensorsStatus: response.data.sensor_status.system_status})
     })
+  }
 
+  pollForStatus = () => {
+    this.getStatus()
+    setTimeout(() => {
+      this.pollForStatus()
+    }, 20000)
+  }
+
+  componentDidMount = () => {
+    this.pollForStatus()
     this.pollForSensors()
   }
 
@@ -378,25 +387,6 @@ class Dashboard extends React.Component {
             </Button>
             </Grid>
             </Paper>
-            <Paper className={classes.paper}>
-                      <div className={classes.appBarSpacer} />
-            <Typography align="center" variant="display1" gutterBottom>
-              Generate API Traffic
-            </Typography>
-            <br />
-            <Button id="100" className={classes.trafficButton} size="large" variant="contained" color="default" onClick={this.handleRequestConcurrent}>
-                100 users @ 10 concurrent requests
-            </Button>
-            <br /><Button id="200" className={classes.trafficButton} size="large" variant="contained" color="primary" onClick={this.handleRequestConcurrent}>
-                200 users @ 20 concurrent requests
-            </Button>
-            <br /><Button id="300" className={classes.trafficButton} size="large" variant="contained" color="secondary" onClick={this.handleRequestConcurrent}>
-                300 users @ 30 concurrent requests
-            </Button>
-            <br /><Button id="100" style={{backgroundColor: purple[500]}} className={classes.trafficButton} size="large" variant="contained" color="secondary" onClick={this.handleUserRequestConcurrent}>
-                Generate Requests for Random User
-            </Button>
-          </Paper>
             </Grid>
             </main>
           <Snackbar

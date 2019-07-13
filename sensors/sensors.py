@@ -1,10 +1,11 @@
 # stdlib
 import random
 import time
+import os
 
 # 3rd party
 from ddtrace import tracer
-from flask import Response, jsonify
+from flask import Response, jsonify, current_app
 from flask import request as flask_request
 
 # internal
@@ -61,8 +62,22 @@ def refresh_sensors():
 def simulate_all_sensors():
     sensors = Sensor.query.all()
     for sensor in sensors:
-        sensor.value = random.randint(1,100)
+        sensor.value = random.randint(1, 100)
     db.session.add_all(sensors)
     db.session.commit()
     app.logger.info('Sensor data updated')
+
+    do_extra_work()
+
     return [s.serialize() for s in sensors]
+
+
+def do_extra_work():
+    if os.environ.get('WORKSHOP_ADD_LATENCY') != 'true':
+        return
+
+    # do extra work for these customers
+    customer_id = flask_request.headers.get('x-customer-id')
+    if customer_id in ('72618136', '1f86decd', 'aa4b5989'):
+        current_app.logger.warn(f'doing extra work for customer {customer_id}')
+        db.session.execute('select pg_sleep(2);')

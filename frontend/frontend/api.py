@@ -1,22 +1,26 @@
 # stdlib
 import os
-import random
-import subprocess
 
 # 3rd party
-from ddtrace import tracer
 from flask import Flask, jsonify, send_from_directory
 from flask import request as flask_request
 from flask_cors import CORS
 import requests
 
 # internal
-from .utils import get_user_id, maybe_raise_exception
+from .sensors import get_sensor_data
+from .utils import get_customer_id, get_request_headers
 
 app = Flask('api')
 
 if os.environ['FLASK_DEBUG']:
     CORS(app)
+
+
+@app.route('/simulate_sensors')
+def simulate_sensors():
+    sensors = get_sensor_data()
+    return jsonify(sensors)
 
 
 @app.route('/')
@@ -26,10 +30,10 @@ def homepage():
 
 @app.route('/status')
 def system_status():
-    status = requests.get('http://sensors:5002/sensors').json()
+    status = requests.get('http://sensors:5002/sensors', headers=get_request_headers()).json()
     app.logger.info(f'Sensor status: {status}')
-    pumps = requests.get('http://pumps:5001/devices').json()
-    users = requests.get('http://node:5004/users').json()
+    pumps = requests.get('http://pumps:5001/devices', headers=get_request_headers()).json()
+    users = requests.get('http://node:5004/users', headers=get_request_headers()).json()
     return jsonify({'sensor_status': status, 'pump_status': pumps, 'users': users})
 
 
@@ -38,75 +42,30 @@ def users():
     if flask_request.method == 'POST':
         newUser = flask_request.get_json()
         app.logger.info(f'Adding new user: {newUser}')
-        userStatus = requests.post('http://node:5004/users', json=newUser).json()
+        userStatus = requests.post(
+            'http://node:5004/users',
+            json=newUser,
+            headers=get_request_headers(),
+        ).json()
         return jsonify(userStatus)
     elif flask_request.method == 'GET':
         app.logger.info(f'Getting all users')
-        users = requests.get('http://node:5004/users').json()
+        users = requests.get('http://node:5004/users', headers=get_request_headers()).json()
         return jsonify(users)
 
 
 @app.route('/add_sensor')
 def add_sensor():
     app.logger.info('Adding a new sensor')
-    sensors = requests.post('http://sensors:5002/sensors').json()
+    sensors = requests.post('http://sensors:5002/sensors', headers=get_request_headers()).json()
     return jsonify(sensors)
 
 
 @app.route('/add_pump', methods=['POST'])
 def add_pump():
-    pumps = requests.post('http://pumps:5001/devices').json()
+    pumps = requests.post('http://pumps:5001/devices', headers=get_request_headers()).json()
     app.logger.info(f'Getting {pumps}')
     return jsonify(pumps)
-
-
-@app.route('/generate_requests', methods=['POST'])
-def call_generate_requests():
-    payload = flask_request.get_json()
-    span = tracer.current_root_span()
-    span.set_tags({'requests': payload['total'], 'concurrent': payload['concurrent']})
-
-    output = subprocess.check_output([
-        '/app/traffic_generator.py',
-        str(payload['concurrent']),
-        str(payload['total']),
-        str(payload['url']),
-    ])
-    app.logger.info(f'Result for subprocess call: {output}')
-    return jsonify({
-        'traffic': (
-            '{0} concurrent requests generated, {1} requests total'.format(payload['concurrent'], payload['total'])
-        ),
-        'url': payload['url'],
-    })
-
-
-# generate requests for one user to see tagged
-# enable user sampling because low request count
-@app.route('/generate_requests_user')
-def call_generate_requests_user():
-    users = requests.get('http://node:5004/users').json()
-    user = random.choice(users)
-    span = tracer.current_root_span()
-    span.set_tags({'user_id': user['id']})
-
-    output = subprocess.check_output([
-        '/app/traffic_generator.py',
-        '20',
-        '100',
-        'http://node:5004/users/' + user['uid'],
-    ])
-    app.logger.info(f'Chose random user {user["name"]} for requests: {output}')
-    return jsonify({'random_user': user['name']})
-
-
-@app.route('/simulate_sensors')
-def simulate_sensors():
-    app.logger.info('Simulating refresh of sensor data')
-    resp = requests.get('http://sensors:5002/refresh_sensors')
-    resp.raise_for_status()
-    sensors = resp.json()
-    return jsonify(sensors)
 
 
 @app.route('/<path:path>')
