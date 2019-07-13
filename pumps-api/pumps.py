@@ -20,7 +20,7 @@ def hello():
 def status():
     if flask_request.method == 'GET':
         pumps = Pump.query.all()
-        app.logger.info(f"Pumps available: {pumps}")
+        app.logger.info(f'Pumps available: {pumps}')
         pump_obj = {'pump_count': len(pumps),
                     'status': []}
         time.sleep(0.5)
@@ -30,10 +30,10 @@ def status():
     elif flask_request.method == 'POST':
         # create a new device w/ random status
         pumps_count = len(Pump.query.all())
-        new_pump = Pump('Pump ' + str(pumps_count + 1), 
+        new_pump = Pump('Pump ' + str(pumps_count + 1),
                         random.choice(['OFF', 'ON']),
-                        random.randint(10,500))
-        app.logger.info(f"Adding pump {new_pump}")
+                        random.randint(10, 500))
+        app.logger.info(f'Adding pump {new_pump}')
         db.session.add(new_pump)
         db.session.commit()
         pumps = Pump.query.all()
@@ -42,4 +42,5 @@ def status():
         time.sleep(0.5)
         return jsonify([b.serialize() for b in pumps])
 
+    app.logger.warn(f'Invalid request method {flask_request.method}')
     return jsonify({'error': 'Invalid request method'}), 405
