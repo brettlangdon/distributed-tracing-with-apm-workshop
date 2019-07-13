@@ -84,6 +84,6 @@ def do_extra_work():
 
     # do extra work for these customers
     customer_id = flask_request.headers.get('x-customer-id')
-    if customer_id in ('72618136', '1f86decd', 'aa4b5989'):
-        current_app.logger.warn(f'Doing extra work for customer {customer_id}')
+    if customer_id in ('a71075f4', '1f86decd', 'fb553eb1'):
+        current_app.logger.warn(f'Looking up additional sensors for customer {customer_id}')
         db.session.execute('select pg_sleep(2);')
