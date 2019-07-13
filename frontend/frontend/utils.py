@@ -46,7 +46,7 @@ def get_customer_data():
     if os.environ.get('WORKSHOP_ADD_ERRORS') == 'true':
         customer_id = g.get('customer_id')
         if customer_id in error_customers:
-            current_app.logger.warn(f'adding error for customer {customer_id}')
+            current_app.logger.warn(f'Fetching data for legacy customer {customer_id}')
             raise CustomException('An error has occurred')
 
     if 'customer_id' in g:
