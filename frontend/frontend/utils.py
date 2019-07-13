@@ -17,7 +17,7 @@ weighted_customer_ids = {
     '72618136': 25,
     'fb553eb1': 10,
 }
-error_customers = set(['72618136', 'a71075f4', 'bfe93e1a'])
+xerror_customers = set(['72618136', 'aa4b5989', 'bfe93e1a'])
 
 # Turn the customer ids into a list where each id shows up as many times
 # as defined in `weighted_customer_ids` e.g. `{'a': 3}`-> `['a', 'a', 'a']`
