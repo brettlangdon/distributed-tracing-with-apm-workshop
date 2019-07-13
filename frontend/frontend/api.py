@@ -2,6 +2,7 @@
 import os
 
 # 3rd party
+from ddtrace import tracer
 from flask import Flask, jsonify, send_from_directory
 from flask import request as flask_request
 from flask_cors import CORS
