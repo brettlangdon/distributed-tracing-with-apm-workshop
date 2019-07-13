@@ -1,6 +1,7 @@
 version: '3'
 services:
   agent:
+    env_file: ".env-agent"
     image: "datadog/agent:6.12.1"
     environment:
       - DD_API_KEY
