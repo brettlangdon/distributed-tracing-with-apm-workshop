@@ -16,6 +16,7 @@ services:
       com.datadoghq.ad.logs: '[{"source": "datadog-agent", "service": "agent"}]'
 
   frontend:
+    env_file: ".env"
     environment:
       - FLASK_APP=api.py
       - FLASK_DEBUG=1
@@ -37,6 +38,7 @@ services:
       com.datadoghq.ad.logs: '[{"source": "python", "service": "frontend"}]'
 
   node:
+    env_file: ".env"
     environment:
       - DD_SERVICE_NAME=users-api
       - DD_TRACE_AGENT_HOSTNAME=agent
@@ -53,6 +55,7 @@ services:
       com.datadoghq.ad.logs: '[{"source": "nodejs", "service": "users-api"}]'
 
   pumps:
+    env_file: ".env"
     environment:
       - FLASK_APP=pumps.py
       - FLASK_DEBUG=1
@@ -78,6 +81,7 @@ services:
       com.datadoghq.ad.logs: '[{"source": "redis", "service": "redis"}]'
 
   sensors:
+    env_file: ".env"
     environment:
       - FLASK_APP=sensors.py
       - FLASK_DEBUG=1
