@@ -23,7 +23,7 @@ def status():
         app.logger.info(f'Pumps available: {pumps}')
         pump_obj = {'pump_count': len(pumps),
                     'status': []}
-        time.sleep(0.5)
+        time.sleep(0.75)  # sleep to simulate a request taking a little longer
         for pump in pumps:
             pump_obj['status'].append(pump.serialize())
         return jsonify(pump_obj)

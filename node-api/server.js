@@ -76,7 +76,7 @@ app.get('/users', async (req, res) => {
             users.push(user)
         }
         logger.info('User list called within User API')
-        await sleep(1000)
+        await sleep(350)
         await res.json(users)
     } catch (e) {
         res.sendStatus(500)

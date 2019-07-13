@@ -28,7 +28,7 @@ def get_sensors():
         app.logger.info('Fetching all sensors')
         sensors = Sensor.query.all()
         system_status = []
-        time.sleep(1.2)
+        time.sleep(0.2)  # add a sleep to simulate a request taking a little longer
         for sensor in sensors:
             system_status.append(sensor.serialize())
         app.logger.info(f'Sensors GET called with a total of {len(system_status)}')
