@@ -1,6 +1,7 @@
 import random
 import os
 
+from ddtrace import tracer
 from flask import current_app, g
 
 # Generate a list of weighted customer ids
