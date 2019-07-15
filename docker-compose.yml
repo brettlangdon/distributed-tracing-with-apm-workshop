@@ -1,12 +1,26 @@
 version: '3'
 services:
+  # Datadog agent
+  #   - Metrics agent
+  #   - APM trace agent
+  #   - Logs agent
   agent:
-    env_file: ".env-agent"
     image: "datadog/agent:6.12.1"
     environment:
+      # Configure with our API key
       - DD_API_KEY
+
+      # Enable the trace agent
       - DD_APM_ENABLED=true
+
+      # Set a global environment tag
       - DD_TAGS='env:apm-workshop'
+
+      # Enable the logs agent
+      - DD_LOGS_ENABLED=true
+
+      # Tell logs agent to collect logs from all docker containers
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
     ports:
       - "8126:8126"
     volumes:
@@ -14,19 +28,26 @@ services:
       - /proc/:/host/proc/:ro
       - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
     labels:
+      # Collect logs as datadog-agent source and agent service
       com.datadoghq.ad.logs: '[{"source": "datadog-agent", "service": "agent"}]'
 
+  # Our frontend Flask application which serves a single page React app
   frontend:
     env_file: ".env"
     environment:
       - FLASK_APP=api.py
       - FLASK_DEBUG=1
+
+      # Set the APM service name to "frontend"
       - DATADOG_SERVICE_NAME=frontend
+
+      # Tell the tracer where the agent is
       - DATADOG_TRACE_AGENT_HOSTNAME=agent
+    # Update command to use ddtrace-run
+    command: ddtrace-run flask run --port=5000 --host=0.0.0.0
     image: "brettlangdon/distributed-tracing-workshop-frontend:latest"
     volumes:
       - "./frontend/frontend:/app"
-    command: ddtrace-run flask run --port=5000 --host=0.0.0.0
     ports:
       - "5000:5000"
     depends_on:
@@ -36,12 +57,17 @@ services:
       - pumps
       - sensors
     labels:
+      # Collect logs for python source and frontend service
       com.datadoghq.ad.logs: '[{"source": "python", "service": "frontend"}]'
 
+  # Users api Node.js server
   node:
     env_file: ".env"
     environment:
+      # Set the APM service name to "users-api"
       - DD_SERVICE_NAME=users-api
+
+      # Tell the tracer where the agent is
       - DD_TRACE_AGENT_HOSTNAME=agent
     image: "brettlangdon/distributed-tracing-workshop-node-api:latest"
     volumes:
@@ -53,8 +79,10 @@ services:
       - agent
       - redis
     labels:
+      # Collect logs for nodejs source and users-api service
       com.datadoghq.ad.logs: '[{"source": "nodejs", "service": "users-api"}]'
 
+  # Pumps Flask API server
   pumps:
     env_file: ".env"
     environment:
@@ -62,25 +90,27 @@ services:
       - FLASK_DEBUG=1
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
+
+      # Set the APM service to "pumps-service"
       - DATADOG_SERVICE_NAME=pumps-service
+
+      # Tell the tracer where the agent is
       - DATADOG_TRACE_AGENT_HOSTNAME=agent
+    # Update command to use ddtrace-run
+    command: ddtrace-run flask run --port=5001 --host=0.0.0.0
     image: "brettlangdon/distributed-tracing-workshop-pumps-api:latest"
     volumes:
       - "./pumps-api:/app"
-    command: ddtrace-run flask run --port=5001 --host=0.0.0.0
     ports:
       - "5001:5001"
     depends_on:
       - agent
       - db
     labels:
+      # Collect logs as source Python and pumps-service service
       com.datadoghq.ad.logs: '[{"source": "python", "service": "pumps-service"}]'
 
-  redis:
-    image: "redis:5-alpine"
-    labels:
-      com.datadoghq.ad.logs: '[{"source": "redis", "service": "redis"}]'
-
+  # Sensors Flask API server
   sensors:
     env_file: ".env"
     environment:
@@ -88,20 +118,27 @@ services:
       - FLASK_DEBUG=1
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
+
+      # Set the APM service name to "sensors-api"
       - DATADOG_SERVICE_NAME=sensors-api
+
+      # Tell the tracer where the agent is
       - DATADOG_TRACE_AGENT_HOSTNAME=agent
+    # Update command to use ddtrace-run
+    command: ddtrace-run flask run --port=5002 --host=0.0.0.0
     image: "brettlangdon/distributed-tracing-workshop-sensors:latest"
     volumes:
       - "./sensors:/app"
-    command: ddtrace-run flask run --port=5002 --host=0.0.0.0
     ports:
       - "5002:5002"
     depends_on:
       - agent
       - db
     labels:
+      # Collect logs as source Python and sensors-api service
       com.datadoghq.ad.logs: '[{"source": "python", "service": "sensors-api"}]'
 
+  # PostgreSQL database
   db:
     image: postgres:11-alpine
     restart: always
@@ -109,4 +146,12 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
     labels:
+      # COllect logs as source postgres and postgres service
       com.datadoghq.ad.logs: '[{"source": "postgres", "service": "postgres"}]'
+
+  # Redis cache
+  redis:
+    image: "redis:5-alpine"
+    labels:
+      # COllect logs as source redis and redis service
+      com.datadoghq.ad.logs: '[{"source": "redis", "service": "redis"}]'
