@@ -148,10 +148,10 @@ class Dashboard extends React.Component {
   };
 
   pollForSensors = () => {
+    this.simulateSensorReads()
     setTimeout(() => {
-      this.simulateSensorReads()
       this.pollForSensors()
-    }, 3000)
+    }, 2000)
   }
 
   getStatus = () => {
@@ -167,7 +167,7 @@ class Dashboard extends React.Component {
     this.getStatus()
     setTimeout(() => {
       this.pollForStatus()
-    }, 20000)
+    }, 8000)
   }
 
   componentDidMount = () => {
